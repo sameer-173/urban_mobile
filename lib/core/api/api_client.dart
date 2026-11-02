@@ -34,14 +34,15 @@ class ApiClient {
           options.headers['Authorization'] = 'Bearer $token';
         }
         
-        // SUVIDHA Multi-Tenancy Invariant Headers
-        options.headers['X-Tenant-ID'] = currentTenantId;
+        // SUVIDHA Multi-Tenancy Invariant Headers:
+        // Operational entities (parcels, water, licenses) are scoped to currentSubTenantId (GWMC)
+        final operationalTenant = currentSubTenantId.isNotEmpty ? currentSubTenantId : currentTenantId;
+        options.headers['X-Tenant-ID'] = operationalTenant;
         options.headers['X-Sub-Tenant-ID'] = currentSubTenantId;
         
         return handler.next(options);
       },
       onError: (DioException error, handler) async {
-        // Can handle auto-refresh token or offline cache fallback here
         return handler.next(error);
       },
     ));
