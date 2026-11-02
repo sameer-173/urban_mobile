@@ -13,21 +13,32 @@ class LoginScreen extends StatefulWidget {
 class _LoginScreenState extends State<LoginScreen> {
   final AuthService _auth = AuthService();
   final TextEditingController _usernameController = TextEditingController(text: 'officer@gwmc.gov.in');
-  final TextEditingController _passwordController = TextEditingController(text: 'urban@123');
+  final TextEditingController _passwordController = TextEditingController(text: 'Officer@123');
   bool _isLoading = false;
   bool _showDirectLogin = false;
 
   Future<void> _handleKeycloakSso() async {
     setState(() => _isLoading = true);
-    final success = await _auth.loginWithKeycloak();
+    final username = _usernameController.text.trim().isNotEmpty
+        ? _usernameController.text.trim()
+        : 'officer@gwmc.gov.in';
+    final password = _passwordController.text.trim().isNotEmpty
+        ? _passwordController.text.trim()
+        : 'Officer@123';
+
+    final success = await _auth.loginWithKeycloak(
+      username: username,
+      password: password,
+    );
+    if (!mounted) return;
     setState(() => _isLoading = false);
 
-    if (success && mounted) {
+    if (success) {
       _navigateToDashboard();
-    } else if (mounted) {
+    } else {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-          content: Text('Keycloak SSO canceled or could not reach server. Try Direct Login.'),
+          content: Text('Keycloak SSO connection failed. Please check credentials or use Direct Login.'),
           backgroundColor: AppTheme.statusDue,
         ),
       );
@@ -47,11 +58,12 @@ class _LoginScreenState extends State<LoginScreen> {
 
     setState(() => _isLoading = true);
     final success = await _auth.loginDirect(username, password);
+    if (!mounted) return;
     setState(() => _isLoading = false);
 
-    if (success && mounted) {
+    if (success) {
       _navigateToDashboard();
-    } else if (mounted) {
+    } else {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
           content: Text('Invalid municipal officer credentials. Please check password.'),
@@ -152,7 +164,7 @@ class _LoginScreenState extends State<LoginScreen> {
                     decoration: BoxDecoration(
                       color: Colors.white,
                       borderRadius: BorderRadius.circular(12),
-                      border: Border.Border.all(color: AppTheme.borderBeige),
+                      border: Border.all(color: AppTheme.borderBeige),
                     ),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -199,14 +211,14 @@ class _LoginScreenState extends State<LoginScreen> {
                               label: const Text('GWMC Officer', style: TextStyle(fontSize: 12)),
                               onPressed: () {
                                 _usernameController.text = 'officer@gwmc.gov.in';
-                                _passwordController.text = 'urban@123';
+                                _passwordController.text = 'Officer@123';
                               },
                             ),
                             ActionChip(
                               label: const Text('State Director', style: TextStyle(fontSize: 12)),
                               onPressed: () {
-                                _usernameController.text = 'dir-ma@telangana.gov.in';
-                                _passwordController.text = 'urban@123';
+                                _usernameController.text = 'admin@urban.gov.in';
+                                _passwordController.text = 'Admin@123';
                               },
                             ),
                           ],

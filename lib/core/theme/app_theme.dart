@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
 
 class AppTheme {
   // SUVIDHA Municipal Design System Tokens
@@ -28,7 +27,7 @@ class AppTheme {
         surface: cardWhite,
         error: statusArrears,
       ),
-      textTheme: GoogleFonts.notoSansTextTheme(),
+      fontFamily: 'sans-serif',
       appBarTheme: const AppBarTheme(
         backgroundColor: surfaceDark,
         foregroundColor: Colors.white,
