@@ -48,5 +48,16 @@ class PropertyService {
     }
     return [];
   }
-}
 
+  Future<Map<String, dynamic>?> getPropertyDetail(String ulpin) async {
+    try {
+      final response = await _api.dio.get('/properties/$ulpin');
+      if (response.statusCode == 200 && response.data != null) {
+        return response.data as Map<String, dynamic>;
+      }
+    } catch (e) {
+      debugPrint('Error fetching property detail: $e');
+    }
+    return null;
+  }
+}
