@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/models/tenant_model.dart';
 import '../../../core/services/tenant_service.dart';
+import '../../../shared/widgets/online_status_beacon.dart';
 import '../models/property_model.dart';
 import '../services/property_service.dart';
 
@@ -237,90 +238,118 @@ class _PtxScreenState extends State<PtxScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
+        titleSpacing: 0,
         title: ValueListenableBuilder<TenantModel?>(
           valueListenable: _tenantService.activeTenant,
           builder: (context, activeTenant, _) {
             final tenantCode = activeTenant?.tenantId ?? "GWMC";
             final tenantName = activeTenant?.name ?? "Greater Warangal";
 
-            // Direct Dropdown menu popping under the title
-            return PopupMenuButton<TenantModel>(
-              position: PopupMenuPosition.under,
-              offset: const Offset(0, 8),
-              color: Colors.white,
-              elevation: 6,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(10),
-                side: const BorderSide(color: AppTheme.borderBeige),
-              ),
-              onSelected: (TenantModel tenant) {
-                _tenantService.switchTenant(tenant);
-              },
-              itemBuilder: (context) {
-                return _tenantService.availableTenants.map((t) {
-                  final isCurrent = t.tenantId == tenantCode;
-                  return PopupMenuItem<TenantModel>(
-                    value: t,
-                    child: Row(
-                      children: [
-                        Icon(
-                          isCurrent ? Icons.check_circle : Icons.location_city_rounded,
-                          color: isCurrent ? AppTheme.statusPaid : AppTheme.secondaryTeal,
-                          size: 18,
+            return LayoutBuilder(
+              builder: (context, constraints) {
+                return PopupMenuButton<TenantModel>(
+                  position: PopupMenuPosition.under,
+                  offset: const Offset(0, 8),
+                  color: Colors.white,
+                  elevation: 6,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(10),
+                    side: const BorderSide(color: AppTheme.borderBeige),
+                  ),
+                  onSelected: (TenantModel tenant) {
+                    _tenantService.switchTenant(tenant);
+                  },
+                  itemBuilder: (context) {
+                    return _tenantService.availableTenants.map((t) {
+                      final isCurrent = t.tenantId == tenantCode;
+                      return PopupMenuItem<TenantModel>(
+                        value: t,
+                        child: Row(
+                          children: [
+                            Icon(
+                              isCurrent ? Icons.check_circle : Icons.location_city_rounded,
+                              color: isCurrent ? AppTheme.statusPaid : AppTheme.secondaryTeal,
+                              size: 18,
+                            ),
+                            const SizedBox(width: 10),
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    t.tenantId,
+                                    style: TextStyle(
+                                      fontWeight: FontWeight.bold,
+                                      fontSize: 14,
+                                      color: isCurrent ? AppTheme.accentSaffron : AppTheme.primaryNavy,
+                                    ),
+                                  ),
+                                  Text(
+                                    '${t.name} (${t.totalParcels} parcels)',
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
+                                    style: const TextStyle(fontSize: 11, color: AppTheme.textMuted),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ],
                         ),
-                        const SizedBox(width: 10),
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                t.tenantId,
-                                style: TextStyle(
-                                  fontWeight: FontWeight.bold,
-                                  fontSize: 14,
-                                  color: isCurrent ? AppTheme.accentSaffron : AppTheme.primaryNavy,
-                                ),
+                      );
+                    }).toList();
+                  },
+                  child: ConstrainedBox(
+                    constraints: BoxConstraints(maxWidth: constraints.maxWidth),
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Text(
+                              'PTX • $tenantCode',
+                              style: const TextStyle(
+                                fontSize: 16,
+                                fontWeight: FontWeight.bold,
+                                color: Colors.white,
                               ),
-                              Text(
-                                '${t.name} (${t.totalParcels} parcels)',
-                                maxLines: 1,
-                                overflow: TextOverflow.ellipsis,
-                                style: const TextStyle(fontSize: 11, color: AppTheme.textMuted),
-                              ),
-                            ],
+                            ),
+                            const Icon(Icons.arrow_drop_down, color: Colors.white, size: 20),
+                          ],
+                        ),
+                        Text(
+                          tenantName,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: const TextStyle(
+                            fontSize: 11,
+                            color: AppTheme.textMuted,
                           ),
                         ),
                       ],
                     ),
-                  );
-                }).toList();
-              },
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Row(
-                        children: [
-                          Text('PTX • $tenantCode', style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
-                          const Icon(Icons.arrow_drop_down, color: Colors.white, size: 22),
-                        ],
-                      ),
-                      Text(tenantName, style: const TextStyle(fontSize: 11, color: AppTheme.textMuted)),
-                    ],
                   ),
-                ],
-              ),
+                );
+              },
             );
           },
         ),
         actions: [
+          const Center(
+            child: Padding(
+              padding: EdgeInsets.symmetric(horizontal: 2.0),
+              child: OnlineStatusBeacon(),
+            ),
+          ),
           IconButton(
             icon: const Icon(Icons.refresh_rounded),
             tooltip: 'Refresh',
+            padding: const EdgeInsets.symmetric(horizontal: 8.0),
+            constraints: const BoxConstraints(minWidth: 40, minHeight: 40),
             onPressed: _loadData,
           ),
+          const SizedBox(width: 4),
         ],
       ),
       body: SafeArea(
